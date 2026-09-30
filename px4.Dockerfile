@@ -1,5 +1,5 @@
 # PX4 Autopilot with TigerVNC and NoVNC
-ARG BASE_IMAGE=erdemuysalx/ros2-jazzy-gazebo-harmonic:latest
+ARG BASE_IMAGE=erdemuysalx/ros2-gazebo:jazzy-harmonic
 FROM ${BASE_IMAGE}
 
 # Metadata

@@ -3,6 +3,10 @@
 
 set -e
 
+# Image names; the base tag names the ROS 2 and Gazebo releases it contains
+BASE_IMAGE="erdemuysalx/ros2-gazebo:jazzy-harmonic"
+PX4_IMAGE="erdemuysalx/px4-sim:latest"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -30,7 +34,7 @@ fi
 # Function to build base image
 build_base() {
     print_info "Building image (Ubuntu 24.04 LTS + ROS 2 Jazzy + Gazebo Harmonic)"
-    docker build -f ros2-jazzy-gazebo-harmonic.Dockerfile -t erdemuysalx/ros2-jazzy-gazebo-harmonic:latest .
+    docker build -f ros2-jazzy-gazebo-harmonic.Dockerfile -t "$BASE_IMAGE" .
     print_info "Image built successfully!"
 }
 
@@ -39,14 +43,14 @@ build_full() {
     print_info "Building image (Ubuntu 24.04 LTS + ROS 2 Jazzy + Gazebo Harmonic + PX4 Autopilot + MAVROS + NoVNC)"
     
     # Check if base image exists
-    if ! docker image inspect erdemuysalx/ros2-jazzy-gazebo-harmonic:latest > /dev/null 2>&1; then
+    if ! docker image inspect "$BASE_IMAGE" > /dev/null 2>&1; then
         print_warn "Base image not found. Building base image first..."
         build_base
     else
         print_warn "Reusing existing base image. Run '$0 --all' to rebuild it after changing ros2-jazzy-gazebo-harmonic.Dockerfile."
     fi
     
-    docker build -f px4.Dockerfile -t erdemuysalx/px4-sim:latest .
+    docker build -f px4.Dockerfile --build-arg BASE_IMAGE="$BASE_IMAGE" -t "$PX4_IMAGE" .
     print_info "Image built successfully!"
 }
 

@@ -14,7 +14,31 @@ Fully containerized PX4 Autopilot simulation environment with browser-based GUI 
 
 ## Quick Start
 
-### 1. Build the Images
+### 1. Get the Images
+
+Pull the prebuilt images (multi-arch: Apple Silicon and x86_64 pull the matching build automatically):
+
+```bash
+docker compose pull
+```
+
+Published tags:
+
+| Image | Tag | Meaning |
+|---|---|---|
+| `erdemuysalx/ros2-gazebo` | `jazzy-harmonic` | Newest build of ROS 2 Jazzy + Gazebo Harmonic |
+| | `jazzy-harmonic-<YYYYMMDD>` | Build of that date |
+| `erdemuysalx/px4-sim` | `latest` | Newest build |
+| | `px4-<version>` | Newest build with that PX4 version, e.g. `px4-v1.17.0` |
+| | `px4-<version>-<YYYYMMDD>` | Build of that date, e.g. `px4-v1.17.0-20261001` |
+
+ROS 2 and Gazebo receive patch updates within a release, so for reproducible results reference a dated tag. The exact versions inside an image are recorded as labels:
+
+```bash
+docker image inspect erdemuysalx/px4-sim:latest --format '{{json .Config.Labels}}'
+```
+
+Or build them locally:
 
 ```bash
 # Build everything
