@@ -124,6 +124,16 @@ RUN make px4_sitl
 WORKDIR /root
 
 # ============================================================================
+# VirtualGL: GPU rendering for Gazebo inside the VNC desktop (NVIDIA hosts)
+# ============================================================================
+# Installed after the PX4 build so it does not invalidate the PX4 build layer
+ARG VIRTUALGL_VERSION=3.1.5
+RUN curl -fsSL -o /tmp/virtualgl.deb \
+    "https://github.com/VirtualGL/virtualgl/releases/download/${VIRTUALGL_VERSION}/virtualgl_${VIRTUALGL_VERSION}_$(dpkg --print-architecture).deb" \
+    && apt-get update && apt-get install -y --no-install-recommends /tmp/virtualgl.deb \
+    && rm -rf /tmp/virtualgl.deb /var/lib/apt/lists/*
+
+# ============================================================================
 # Setup environment variables and shell banner
 # ============================================================================
 ENV PX4_DIR=/root/PX4-Autopilot

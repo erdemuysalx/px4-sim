@@ -1,0 +1,14 @@
+# NVIDIA GPU override; requires the NVIDIA driver and NVIDIA Container Toolkit on the host.
+# docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+services:
+  px4-sim:
+    environment:
+      # "all" includes graphics (EGL/OpenGL), not only CUDA compute
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

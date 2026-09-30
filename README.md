@@ -10,6 +10,7 @@ Fully containerized PX4 Autopilot simulation environment with browser-based GUI 
 - **ROS Gazebo Bridge** (`ros-jazzy-ros-gz-bridge`) - Bidirectional transport bridge between Gazebo and ROS
 - **MAVROS** (`ros-jazzy-mavros`) - PX4 to ROS 2 gateway
 - **TigerVNC + NoVNC** - Browser-based desktop access
+- **VirtualGL** - GPU-accelerated Gazebo rendering on NVIDIA hosts (optional, see [NVIDIA GPU](#nvidia-gpu-remote-or-local-linux-host))
 - **XFCE4 Desktop** - Full desktop environment
 
 ## Quick Start
@@ -89,6 +90,28 @@ ssh -L 6080:localhost:6080 user@remote-host
 ```
 
 Gazebo renders in software inside the VNC desktop. To run the simulation without the Gazebo window, start PX4 with `HEADLESS=1 make px4_sitl gz_x500`.
+
+Only TCP ports can be tunneled with `ssh -L`. QGroundControl uses UDP 18570, so to reach PX4 from QGroundControl on your laptop, use a VPN (for example WireGuard or Tailscale) or publish 18570 on the server's network interface in `docker-compose.yml`.
+
+Build the images on the server itself (`./build.sh --all`). Images built on Apple Silicon are `arm64` and do not run on an `x86_64` server.
+
+#### NVIDIA GPU (remote or local Linux host)
+
+Requirements on the host: the NVIDIA driver and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). Start the container with the GPU override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+docker exec -it px4-sim nvidia-smi     # the GPU should be listed
+```
+
+This gives the container the GPU for CUDA (your own vision or learning nodes) and for OpenGL/EGL. The VNC desktop itself has no GPU, so Gazebo still renders in software unless it is started through VirtualGL, which is included in the image:
+
+```bash
+cd /root/PX4-Autopilot
+vglrun -d egl make px4_sitl gz_x500_depth
+```
+
+`vglrun` applies to every process that `make` starts, so both the Gazebo server (camera and depth sensors) and the Gazebo window render on the GPU. While the simulation runs, `nvidia-smi` on the host should list the `gz sim` processes. Without an NVIDIA GPU (for example on macOS), run `make` without `vglrun`.
 
 ### 4. Control Interface
 
