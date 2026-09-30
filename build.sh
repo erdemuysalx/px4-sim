@@ -39,12 +39,14 @@ build_full() {
     print_info "Building image (Ubuntu 24.04 LTS + ROS 2 Jazzy + Gazebo Harmonic + PX4 Autopilot + MAVROS + NoVNC)"
     
     # Check if base image exists
-    if ! docker images erdemuysalx/ros2-jazzy-gazebo-harmonic:latest | grep -q erdemuysalx/ros2-jazzy-gazebo-harmonic; then
+    if ! docker image inspect erdemuysalx/ros2-jazzy-gazebo-harmonic:latest > /dev/null 2>&1; then
         print_warn "Base image not found. Building base image first..."
         build_base
+    else
+        print_warn "Reusing existing base image. Run '$0 --all' to rebuild it after changing ros2-jazzy-gazebo-harmonic.Dockerfile."
     fi
     
-    docker build -f px4-sitl.Dockerfile -t erdemuysalx/px4-sitl:latest .
+    docker build -f px4.Dockerfile -t erdemuysalx/px4-sim:latest .
     print_info "Image built successfully!"
 }
 
@@ -61,7 +63,7 @@ Usage: $0 [COMMAND]
 
 Commands:
     --base    Build only the base image (ROS 2 + Gazebo)
-    --full    Build full image (includes PX4 + VNC)
+    --full    Build full image (includes PX4 + VNC); reuses an existing base image
     --all     Build all images (base + full)
     --help    Show this help message
 
@@ -71,8 +73,8 @@ Examples:
     $0 --all           # Build all images
 
 After building, use docker-compose to run:
-    docker-compose up           # Interactive mode
-    docker-compose up -d        # Detached mode
+    docker-compose up -d
+    docker exec -it px4-sim bash
 EOF
 }
 

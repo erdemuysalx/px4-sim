@@ -9,7 +9,7 @@ LABEL version="1.0"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
 ENV LANG=en_US.UTF-8
-ENV LC_ALL=C.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 # Set locale
 RUN apt-get update && apt-get install -y \

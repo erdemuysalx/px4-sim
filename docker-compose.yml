@@ -1,36 +1,33 @@
-
 services:
   # ROS 2 Jazzy + Gazebo Harmonic + PX4 Autopilot + NoVNC
-  px4-sitl:
+  px4-sim:
     build:
       context: .
-      dockerfile: px4-sitl.Dockerfile
-    image: erdemuysalx/px4-sitl:latest
-    container_name: px4_sitl 
-    privileged: true
-    stdin_open: true
-    tty: true
-    
-    # volumes:
+      dockerfile: px4.Dockerfile
+    image: erdemuysalx/px4-sim:latest
+    container_name: px4-sim
+
+    volumes:
+      # Your ROS 2 workspace, kept on the host; set ROS2_WS to use another directory
+      - ${ROS2_WS:-./ros2_ws}:/root/ros2_ws
+      # ros_gz_bridge topic mapping; edit, then `supervisorctl restart ros-bridges`
+      - ./config:/opt/px4-sim/config:ro
+      # Linux X11 forwarding: uncomment, and set DISPLAY below to ${DISPLAY}
       # - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      # - /home/user/workspace:/root/workspace
 
     environment:
       - DISPLAY=:1
       # - DISPLAY=${DISPLAY}
-      # - PX4_GZ_WORLD=default
+      # Start MAVROS + ros_gz_bridge with the container (PX4 itself is started manually)
+      - ROS_BRIDGES_AUTOSTART=true
 
+    # ROS 2 (Fast DDS) and Gazebo use shared memory; lower this on machines with little RAM
+    shm_size: 2gb
+
+    # Bound to loopback: VNC uses a fixed weak password
     ports:
-      - "5901:5901"
-      - "6080:6080"
-      - "14550:14550/udp"
-      - "18570:18570/udp"
-    
-    restart: unless-stopped
+      - "127.0.0.1:5901:5901"
+      - "127.0.0.1:6080:6080"
+      - "127.0.0.1:18570:18570/udp"
 
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6080/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    restart: unless-stopped
